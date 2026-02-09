@@ -24,6 +24,13 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
     go build -ldflags="-X 'main.Version=${COMMIT_SHA}'" -o backend_exe ./backend/
 
+# Build the projects refresh service binary and ship it in the image.
+# This is required for "project cache local exec" mode, which expects to exec
+# the refresh service locally within the container.
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    go build -ldflags="-X 'main.Version=${COMMIT_SHA}'" -o /tmp/projects_refesh_main ./background/projects-refresh-service
+
 # Multi-stage build will just copy the binary to an alpine image.
 FROM ubuntu:24.04 as runner
 ENV ATLAS_VERSION v0.38.0
@@ -48,6 +55,7 @@ EXPOSE 3000
 
 # Copy the binary to the corresponding folder
 COPY --from=builder /go/src/github.com/diggerhq/digger/backend_exe /app/backend
+COPY --from=builder /tmp/projects_refesh_main /app/projects_refesh_main
 COPY --from=builder /go/src/github.com/diggerhq/digger/backend/scripts/entrypoint.sh /app/entrypoint.sh
 COPY --from=builder /go/src/github.com/diggerhq/digger/backend/migrations /app/migrations
 ADD backend/templates ./templates

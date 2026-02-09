@@ -159,6 +159,9 @@ func Bootstrap(templates embed.FS, diggerController controllers.DiggerController
 		r.LoadHTMLGlob("templates/*.tmpl")
 	}
 
+	// Canonical GitHub App webhook endpoint.
+	r.POST("/github/webhook", diggerController.GithubAppWebHook)
+	// Legacy webhook path kept for backward compatibility.
 	r.POST("/github-app-webhook", diggerController.GithubAppWebHook)
 
 	tenantActionsGroup := r.Group("/api/tenants")
@@ -172,6 +175,20 @@ func Bootstrap(templates embed.FS, diggerController controllers.DiggerController
 	githubGroup.GET("/repos", diggerController.GithubReposPage)
 	githubGroup.GET("/setup", controllers.GithubAppSetup)
 	githubGroup.GET("/exchange-code", diggerController.GithubSetupExchangeCode)
+
+	publicPrefix := utils.NormalizePublicPathPrefix(os.Getenv("DIGGER_PUBLIC_PATH_PREFIX"))
+	if publicPrefix != "" {
+		prefixed := r.Group(publicPrefix)
+		prefixed.POST("/github/webhook", diggerController.GithubAppWebHook)
+		prefixed.POST("/github-app-webhook", diggerController.GithubAppWebHook)
+
+		prefixedGithubGroup := prefixed.Group("/github")
+		prefixedGithubGroup.Use(middleware.GetWebMiddleware())
+		prefixed.GET("/github/callback", diggerController.GithubAppCallbackPage)
+		prefixedGithubGroup.GET("/repos", diggerController.GithubReposPage)
+		prefixedGithubGroup.GET("/setup", controllers.GithubAppSetup)
+		prefixedGithubGroup.GET("/exchange-code", diggerController.GithubSetupExchangeCode)
+	}
 
 	authorized := r.Group("/")
 	authorized.Use(middleware.GetApiMiddleware(), middleware.AccessLevel(models.CliJobAccessType, models.AccessPolicyType, models.AdminPolicyType))

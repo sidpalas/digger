@@ -3,6 +3,11 @@ import { getConfig } from '../../../authkit/ssr/config';
 import { saveSession } from '../../../authkit/ssr/session';
 import { getWorkOS } from '../../../authkit/ssr/workos';
 import { redirectWithFallback, errorResponseWithFallback } from '../../../api/helpers';
+import { decodeJwt } from 'jose';
+import type { AccessToken } from '@workos-inc/node';
+import { syncOrgToBackend } from '@/api/orchestrator_orgs';
+import { syncOrgToStatesman } from '@/api/statesman_orgs';
+import { syncUserToStatesman } from '@/api/statesman_users';
 
 export const Route = createFileRoute('/api/auth/callback')({
   server: {
@@ -52,6 +57,18 @@ export const Route = createFileRoute('/api/auth/callback')({
 
             await saveSession({ accessToken, refreshToken, user, impersonator });
 
+            // Ensure the signed-in WorkOS organization exists in dependent services.
+            // This is a best-effort, login-time sync (in addition to any webhook-based
+            // syncing) to reduce races/missed events; otherwise subsequent calls to
+            // internal APIs can fail with "organization not found" for newly-seen orgs.
+            const { org_id: organizationId } = decodeJwt<AccessToken>(accessToken);
+            if (organizationId) {
+              const organization = await getWorkOS().organizations.getOrganization(organizationId);
+              await syncOrgToBackend(organization.id, organization.name, user.email);
+              await syncOrgToStatesman(organization.id, organization.name, organization.name, user.id, user.email);
+              await syncUserToStatesman(user.id, user.email, organization.id);
+            }
+
             return response;
           } catch (error) {
             const errorRes = {
@@ -79,4 +96,3 @@ export const Route = createFileRoute('/api/auth/callback')({
     },
   },
 });
-

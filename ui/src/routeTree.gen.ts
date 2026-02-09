@@ -18,6 +18,8 @@ import { Route as OrchestratorJob_artefactsRouteImport } from './routes/_orchest
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/_dashboard'
 import { Route as OrchestratorGithubWebhookRouteImport } from './routes/orchestrator/github/webhook'
 import { Route as OrchestratorGithubCallbackRouteImport } from './routes/orchestrator/github/callback'
+import { Route as OrchestratorGithubExchangeCodeRouteImport } from './routes/orchestrator/github/exchange-code'
+import { Route as OrchestratorGithubSetupRouteImport } from './routes/orchestrator/github/setup'
 import { Route as AppSettingsTokensRouteImport } from './routes/app/settings.tokens'
 import { Route as ApiInternalSyncWorkosOrgsRouteImport } from './routes/api/internal/sync-workos-orgs'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
@@ -91,6 +93,18 @@ const OrchestratorGithubCallbackRoute =
   OrchestratorGithubCallbackRouteImport.update({
     id: '/orchestrator/github/callback',
     path: '/orchestrator/github/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const OrchestratorGithubExchangeCodeRoute =
+  OrchestratorGithubExchangeCodeRouteImport.update({
+    id: '/orchestrator/github/exchange-code',
+    path: '/orchestrator/github/exchange-code',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const OrchestratorGithubSetupRoute =
+  OrchestratorGithubSetupRouteImport.update({
+    id: '/orchestrator/github/setup',
+    path: '/orchestrator/github/setup',
     getParentRoute: () => rootRouteImport,
   } as any)
 const AppSettingsTokensRoute = AppSettingsTokensRouteImport.update({
@@ -264,6 +278,8 @@ export interface FileRoutesByFullPath {
   '/api/internal/sync-workos-orgs': typeof ApiInternalSyncWorkosOrgsRoute
   '/app/settings/tokens': typeof AppSettingsTokensRoute
   '/orchestrator/github/callback': typeof OrchestratorGithubCallbackRoute
+  '/orchestrator/github/exchange-code': typeof OrchestratorGithubExchangeCodeRoute
+  '/orchestrator/github/setup': typeof OrchestratorGithubSetupRoute
   '/orchestrator/github/webhook': typeof OrchestratorGithubWebhookRoute
   '/dashboard/connections': typeof AuthenticatedDashboardDashboardConnectionsRouteWithChildren
   '/dashboard/drift': typeof AuthenticatedDashboardDashboardDriftRoute
@@ -300,6 +316,8 @@ export interface FileRoutesByTo {
   '/api/internal/sync-workos-orgs': typeof ApiInternalSyncWorkosOrgsRoute
   '/app/settings/tokens': typeof AppSettingsTokensRoute
   '/orchestrator/github/callback': typeof OrchestratorGithubCallbackRoute
+  '/orchestrator/github/exchange-code': typeof OrchestratorGithubExchangeCodeRoute
+  '/orchestrator/github/setup': typeof OrchestratorGithubSetupRoute
   '/orchestrator/github/webhook': typeof OrchestratorGithubWebhookRoute
   '/dashboard/connections': typeof AuthenticatedDashboardDashboardConnectionsRouteWithChildren
   '/dashboard/drift': typeof AuthenticatedDashboardDashboardDriftRoute
@@ -337,6 +355,8 @@ export interface FileRoutesById {
   '/api/internal/sync-workos-orgs': typeof ApiInternalSyncWorkosOrgsRoute
   '/app/settings/tokens': typeof AppSettingsTokensRoute
   '/orchestrator/github/callback': typeof OrchestratorGithubCallbackRoute
+  '/orchestrator/github/exchange-code': typeof OrchestratorGithubExchangeCodeRoute
+  '/orchestrator/github/setup': typeof OrchestratorGithubSetupRoute
   '/orchestrator/github/webhook': typeof OrchestratorGithubWebhookRoute
   '/_authenticated/_dashboard/dashboard/connections': typeof AuthenticatedDashboardDashboardConnectionsRouteWithChildren
   '/_authenticated/_dashboard/dashboard/drift': typeof AuthenticatedDashboardDashboardDriftRoute
@@ -375,6 +395,8 @@ export interface FileRouteTypes {
     | '/api/internal/sync-workos-orgs'
     | '/app/settings/tokens'
     | '/orchestrator/github/callback'
+    | '/orchestrator/github/exchange-code'
+    | '/orchestrator/github/setup'
     | '/orchestrator/github/webhook'
     | '/dashboard/connections'
     | '/dashboard/drift'
@@ -411,6 +433,8 @@ export interface FileRouteTypes {
     | '/api/internal/sync-workos-orgs'
     | '/app/settings/tokens'
     | '/orchestrator/github/callback'
+    | '/orchestrator/github/exchange-code'
+    | '/orchestrator/github/setup'
     | '/orchestrator/github/webhook'
     | '/dashboard/connections'
     | '/dashboard/drift'
@@ -447,6 +471,8 @@ export interface FileRouteTypes {
     | '/api/internal/sync-workos-orgs'
     | '/app/settings/tokens'
     | '/orchestrator/github/callback'
+    | '/orchestrator/github/exchange-code'
+    | '/orchestrator/github/setup'
     | '/orchestrator/github/webhook'
     | '/_authenticated/_dashboard/dashboard/connections'
     | '/_authenticated/_dashboard/dashboard/drift'
@@ -485,6 +511,8 @@ export interface RootRouteChildren {
   ApiInternalSyncWorkosOrgsRoute: typeof ApiInternalSyncWorkosOrgsRoute
   AppSettingsTokensRoute: typeof AppSettingsTokensRoute
   OrchestratorGithubCallbackRoute: typeof OrchestratorGithubCallbackRoute
+  OrchestratorGithubExchangeCodeRoute: typeof OrchestratorGithubExchangeCodeRoute
+  OrchestratorGithubSetupRoute: typeof OrchestratorGithubSetupRoute
   OrchestratorGithubWebhookRoute: typeof OrchestratorGithubWebhookRoute
   OrchestratorOrgsOrgIdAccess_policyRoute: typeof OrchestratorOrgsOrgIdAccess_policyRoute
   OrchestratorOrgsOrgIdPlan_policyRoute: typeof OrchestratorOrgsOrgIdPlan_policyRoute
@@ -546,6 +574,20 @@ declare module '@tanstack/react-router' {
       fullPath: ''
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/orchestrator/github/setup': {
+      id: '/orchestrator/github/setup'
+      path: '/orchestrator/github/setup'
+      fullPath: '/orchestrator/github/setup'
+      preLoaderRoute: typeof OrchestratorGithubSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orchestrator/github/exchange-code': {
+      id: '/orchestrator/github/exchange-code'
+      path: '/orchestrator/github/exchange-code'
+      fullPath: '/orchestrator/github/exchange-code'
+      preLoaderRoute: typeof OrchestratorGithubExchangeCodeRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/orchestrator/github/webhook': {
       id: '/orchestrator/github/webhook'
@@ -883,6 +925,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiInternalSyncWorkosOrgsRoute: ApiInternalSyncWorkosOrgsRoute,
   AppSettingsTokensRoute: AppSettingsTokensRoute,
+  OrchestratorGithubSetupRoute: OrchestratorGithubSetupRoute,
+  OrchestratorGithubExchangeCodeRoute: OrchestratorGithubExchangeCodeRoute,
   OrchestratorGithubCallbackRoute: OrchestratorGithubCallbackRoute,
   OrchestratorGithubWebhookRoute: OrchestratorGithubWebhookRoute,
   OrchestratorOrgsOrgIdAccess_policyRoute:

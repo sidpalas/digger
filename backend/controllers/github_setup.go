@@ -37,17 +37,37 @@ func GithubAppSetup(c *gin.Context) {
 	}
 
 	host := os.Getenv("HOSTNAME")
+	// When the backend is deployed behind a reverse proxy (or behind the UI proxy),
+	// the inbound request Host/TLS reflects the internal hop, not the public origin.
+	// The GitHub App manifest flow requires public callback/webhook URLs, so we
+	// prefer X-Forwarded-Host/Proto when present to construct externally reachable
+	// URLs.
+	forwardedHost := c.Request.Header.Get("X-Forwarded-Host")
+	forwardedProto := c.Request.Header.Get("X-Forwarded-Proto")
+	if forwardedHost != "" {
+		if forwardedProto == "" {
+			forwardedProto = "https"
+		}
+		host = fmt.Sprintf("%s://%s", forwardedProto, forwardedHost)
+	} else if host == "" {
+		scheme := "http"
+		if c.Request.TLS != nil {
+			scheme = "https"
+		}
+		host = fmt.Sprintf("%s://%s", scheme, c.Request.Host)
+	}
+	publicPrefix := utils.NormalizePublicPathPrefix(os.Getenv("DIGGER_PUBLIC_PATH_PREFIX"))
 	manifest := &githubAppRequest{
 		Name:        fmt.Sprintf("Digger app %v", rand.Int31()),
 		Description: fmt.Sprintf("Digger hosted at %s", host),
 		URL:         host,
-		RedirectURL: fmt.Sprintf("%s/github/exchange-code", host),
+		RedirectURL: fmt.Sprintf("%s%s", host, utils.ApplyPublicPathPrefix(publicPrefix, "/github/exchange-code")),
 		Public:      false,
 		Webhook: &githubWebhook{
 			Active: true,
-			URL:    fmt.Sprintf("%s/github-app-webhook", host),
+			URL:    fmt.Sprintf("%s%s", host, utils.ApplyPublicPathPrefix(publicPrefix, "/github/webhook")),
 		},
-		CallbackUrls:          []string{fmt.Sprintf("%s/github/callback", host)},
+		CallbackUrls:          []string{fmt.Sprintf("%s%s", host, utils.ApplyPublicPathPrefix(publicPrefix, "/github/callback"))},
 		SetupOnUpdate:         true,
 		RequestOauthOnInstall: true,
 		Events: []string{
